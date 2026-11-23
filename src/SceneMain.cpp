@@ -56,20 +56,20 @@ void SceneMain::keyboardControl()
 {       
         // 获取键盘状态
         auto keyboardState = SDL_GetKeyboardState(NULL);
-        
-        if (keyboardState[SDL_SCANCODE_W])
+
+        if (keyboardState[SDL_SCANCODE_W]||keyboardState[SDL_SCANCODE_UP])
         {
                 player.position.y -= 1;
         }
-        if (keyboardState[SDL_SCANCODE_S])
+        if (keyboardState[SDL_SCANCODE_S]||keyboardState[SDL_SCANCODE_DOWN])
         {
                 player.position.y += 1;
         }
-        if (keyboardState[SDL_SCANCODE_A])
+        if (keyboardState[SDL_SCANCODE_A]||keyboardState[SDL_SCANCODE_LEFT])
         {
                 player.position.x -= 1;
         }
-        if (keyboardState[SDL_SCANCODE_D])
+        if (keyboardState[SDL_SCANCODE_D]||keyboardState[SDL_SCANCODE_RIGHT])
         {
                 player.position.x += 1;
         }
