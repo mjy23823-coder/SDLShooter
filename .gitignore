@@ -1,0 +1,9 @@
+# CMake / 编译产物
+build/
+
+# Visual Studio
+.vs/
+*.user
+
+# 系统文件
+.DS_Store
