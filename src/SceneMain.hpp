@@ -19,7 +19,7 @@ class SceneMain : public Scene
 private:
        Game &game;
        Player player;
-
+       bool isDead = false;                 // 玩家是否死亡
        // 随机数相关成员
        std::mt19937 gen;                          // 随机数生成器
        std::uniform_real_distribution<float> dis; // 随机数分布器
@@ -57,8 +57,12 @@ private:
        // 渲染敌机子弹
        void renderEnemyProjectiles();
        // 计算子弹方向
-       SDL_FPoint getDirection(Enemy *enemy); 
-       
+       SDL_FPoint getDirection(Enemy *enemy);
+       // 更新玩家状态
+       void updatePlayer(float deltaTime);
+       // 敌机爆炸效果
+       void enemyExplode(Enemy *enemy);
+
 public:
        SceneMain();
        ~SceneMain();
