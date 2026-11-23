@@ -10,7 +10,7 @@
 #pragma once
 #include "Scene.hpp"
 #include <SDL_mixer.h>
-
+#include "Object.hpp"
 class Game
 {
 private:
@@ -31,11 +31,13 @@ private:
        // 游戏窗口长度
        int windowHeight = 800;
        // 目标帧率
-       int FPS = 60;          
-       // 每帧的目标时间（毫秒）  
-       Uint32 frameTime;       
-       // 两帧之间的时间差（秒） 
-       float deltaTime;        
+       int FPS = 60;
+       // 每帧的目标时间（毫秒）
+       Uint32 frameTime;
+       // 两帧之间的时间差（秒）
+       float deltaTime;
+       Background nearStars; // 近处的星星
+       Background farStars;  // 远处的星星
 
 public:
        static Game &getInstance()
@@ -57,11 +59,13 @@ public:
        //
        void update(float deltaTime);
        void render();
+       // 背景更新
+       void backgroundUpdate(float deltaTime);
+       // 背景渲染
+       void renderBackground();
 
        SDL_Window *getWindow() { return window; }
        SDL_Renderer *getRenderer() { return renderer; }
        int getWindowWidth() { return windowWidth; }
        int getWindowHeight() { return windowHeight; }
-
-
 };

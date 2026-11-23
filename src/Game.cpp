@@ -72,6 +72,18 @@ void Game::init()
                 isRunning = false;
         }
 
+        // 初始化背景卷轴
+        nearStars.texture = IMG_LoadTexture(renderer, "assets/image/Stars-A.png");
+        SDL_QueryTexture(nearStars.texture, NULL, NULL, &nearStars.width, &nearStars.height);
+        nearStars.height /= 2;
+        nearStars.width /= 2;
+
+        farStars.texture = IMG_LoadTexture(renderer, "assets/image/Stars-B.png");
+        SDL_QueryTexture(farStars.texture, NULL, NULL, &farStars.width, &farStars.height);
+        farStars.height /= 2;
+        farStars.width /= 2;
+        farStars.speed = 20; // 远处的星星移动速度较慢
+
         // 打开音频设备
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
         {
@@ -97,6 +109,14 @@ void Game::clean()
         {
                 currentScene->clean();
                 delete currentScene;
+        }
+        if (nearStars.texture != nullptr)
+        {
+                SDL_DestroyTexture(nearStars.texture);
+        }
+        if (farStars.texture != nullptr)
+        {
+                SDL_DestroyTexture(farStars.texture);
         }
         // 销毁渲染器
         SDL_DestroyRenderer(renderer);
@@ -136,6 +156,7 @@ void Game::handleEvent(SDL_Event *event)
 
 void Game::update(float deltaTime)
 {
+        backgroundUpdate(deltaTime);
         currentScene->update(deltaTime);
 }
 
@@ -143,7 +164,49 @@ void Game::render()
 {
         // 清空
         SDL_RenderClear(renderer);
+        // 渲染星空背景
+        renderBackground();
+
         currentScene->render();
         // 显示更新
         SDL_RenderPresent(renderer);
+}
+
+// Game.cpp
+void Game::backgroundUpdate(float deltaTime)
+{
+        nearStars.offset += nearStars.speed * deltaTime;
+        if (nearStars.offset >= 0)
+        {
+                nearStars.offset -= nearStars.height;
+        }
+
+        farStars.offset += farStars.speed * deltaTime;
+        if (farStars.offset >= 0)
+        {
+                farStars.offset -= farStars.height;
+        }
+}
+
+// Game.cpp
+void Game::renderBackground()
+{
+        // 渲染远处的星星
+        for (int posY = static_cast<int>(farStars.offset); posY < getWindowHeight(); posY += farStars.height)
+        {
+                for (int posX = 0; posX < getWindowWidth(); posX += farStars.width)
+                {
+                        SDL_Rect ds = {posX, posY, farStars.width, farStars.height};
+                        SDL_RenderCopy(renderer, farStars.texture, NULL, &ds);
+                }
+        }
+        // 渲染近处的星星
+        for (int posY = static_cast<int>(nearStars.offset); posY < getWindowHeight(); posY += nearStars.height)
+        {
+                for (int posX = 0; posX < getWindowWidth(); posX += nearStars.width)
+                {
+                        SDL_Rect dstRect = {posX, posY, nearStars.width, nearStars.height};
+                        SDL_RenderCopy(renderer, nearStars.texture, nullptr, &dstRect);
+                }
+        }
 }

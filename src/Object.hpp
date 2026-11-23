@@ -102,3 +102,13 @@ struct Item
       int bounceCount = 3;            // 物品在碰到屏幕边缘时可以反弹的次数
       ItemType type = ItemType::Life; // 物品的类型
 };
+
+//背景
+struct Background{
+    SDL_Texture* texture = nullptr;
+    SDL_FPoint position = {0, 0};
+    float offset = 0;
+    int width = 0;
+    int height = 0;
+    int speed = 30;
+};
