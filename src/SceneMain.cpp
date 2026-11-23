@@ -17,6 +17,8 @@ void SceneMain::update(float deltaTime)
         spawEnemy();                        // 生成敌机
         updateEnemies(deltaTime);           // 更新敌机
         updatePlayer(deltaTime);            // 添加更新玩家状态
+        updateExplosions(deltaTime);        // 添加更新爆炸动画
+        
 }
 
 void SceneMain::render()
@@ -36,6 +38,8 @@ void SceneMain::render()
         }
         // 渲染敌人
         renderEnemies();
+        // 渲染爆炸动画
+        renderExplosions();
 }
 
 void SceneMain::handleEvent(SDL_Event *event)
@@ -79,6 +83,13 @@ void SceneMain::init()
         SDL_QueryTexture(projectileEnemyTemplate.texture, NULL, NULL, &projectileEnemyTemplate.width, &projectileEnemyTemplate.height);
         projectileEnemyTemplate.width /= 4;
         projectileEnemyTemplate.height /= 4;
+
+        // 初始化爆炸动画模板
+        explosionTemplate.texture = IMG_LoadTexture(game.getRenderer(), "assets/effect/explosion.png");
+        SDL_QueryTexture(explosionTemplate.texture, NULL, NULL, &explosionTemplate.width, &explosionTemplate.height);
+        // 总宽度除以高度，我们得到总帧数
+        explosionTemplate.totlaFrame = explosionTemplate.width / explosionTemplate.height;
+        explosionTemplate.width = explosionTemplate.height;
 }
 
 void SceneMain::clean()
@@ -114,6 +125,16 @@ void SceneMain::clean()
         }
         projectilesEnemy.clear();
 
+        // 清理爆炸动画
+        for (auto &explosion : explosions)
+        {
+                if (explosion != nullptr)
+                {
+                        delete explosion;
+                }
+        }
+        explosions.clear();
+
         // 清理纹理
         if (player.texture != nullptr)
         {
@@ -130,6 +151,10 @@ void SceneMain::clean()
         if (projectileEnemyTemplate.texture != nullptr)
         {
                 SDL_DestroyTexture(projectileEnemyTemplate.texture);
+        }
+        if (explosionTemplate.texture != nullptr)
+        {
+                SDL_DestroyTexture(explosionTemplate.texture);
         }
 }
 
@@ -309,6 +334,12 @@ void SceneMain::updateEnemies(float deltaTime)
 
 void SceneMain::enemyExplode(Enemy *enemy)
 {
+        auto currentTime = SDL_GetTicks();
+        auto explosion = new Explosion(explosionTemplate);
+        explosion->position.x = enemy->position.x + enemy->width / 2 - explosion->width / 2;
+        explosion->position.y = enemy->position.y + enemy->height / 2 - explosion->height / 2;
+        explosion->startTime = currentTime;
+        explosions.push_back(explosion);
         delete enemy;
 }
 
@@ -425,6 +456,7 @@ void SceneMain::updatePlayer(float deltaTime)
         }
         if (player.currentHealth <= 0)
         {
+                playerExplode();
                 // 玩家死亡处理
                 isDead = true;
         }
@@ -446,4 +478,52 @@ void SceneMain::updatePlayer(float deltaTime)
                         enemy->currentHealth = 0;
                 }
         }
+}
+
+void SceneMain::updateExplosions(float)
+{
+        auto currentTime = SDL_GetTicks();
+        for (auto it = explosions.begin(); it != explosions.end();)
+        {
+                auto explosion = *it;
+                // 根据时间差和帧率计算当前帧索引
+                explosion->currentFrame = (currentTime - explosion->startTime) * explosion->FPS / 1000;
+                // 检查动画是否播放完毕
+                if (explosion->currentFrame >= explosion->totlaFrame)
+                {
+                        delete explosion;
+                        it = explosions.erase(it);
+                }
+                else
+                {
+                        ++it;
+                }
+        }
+}
+
+void SceneMain::renderExplosions()
+{
+        for (auto explosion : explosions)
+        {
+                // 定义源矩形（精灵图上的区域）
+                SDL_Rect src = {explosion->currentFrame * explosion->width, 0, explosion->width, explosion->height};
+                // 定义目标矩形（屏幕上的位置）
+                SDL_Rect dst = {
+                    static_cast<int>(explosion->position.x),
+                    static_cast<int>(explosion->position.y),
+                    explosion->width,
+                    explosion->height};
+                // 绘制当前帧
+                SDL_RenderCopy(game.getRenderer(), explosion->texture, &src, &dst);
+        }
+}
+
+void SceneMain::playerExplode()
+{
+        auto currentTime = SDL_GetTicks();
+        auto explosion = new Explosion(explosionTemplate);
+        explosion->position.x = player.position.x + player.width / 2 - explosion->width / 2;
+        explosion->position.y = player.position.y + player.height / 2 - explosion->height / 2;
+        explosion->startTime = currentTime;
+        explosions.push_back(explosion);
 }

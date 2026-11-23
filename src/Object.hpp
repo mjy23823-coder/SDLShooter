@@ -66,3 +66,15 @@ struct ProjectileEnemy
       int speed = 400;
       int damage = 1; // 敌机子弹伤害值为1
 };
+
+// 爆炸动画
+struct Explosion{
+    SDL_Texture* texture = nullptr;
+    SDL_FPoint position = {0, 0};
+    int width = 0;
+    int height = 0;
+    int currentFrame = 0;       // 当前帧索引
+    int totlaFrame = 0;         // 总帧数
+    Uint32 startTime = 0;       // 动画开始时间
+    Uint32 FPS = 10;            // 帧率（每秒播放帧数）
+};

@@ -19,7 +19,7 @@ class SceneMain : public Scene
 private:
        Game &game;
        Player player;
-       bool isDead = false;                 // 玩家是否死亡
+       bool isDead = false; // 玩家是否死亡
        // 随机数相关成员
        std::mt19937 gen;                          // 随机数生成器
        std::uniform_real_distribution<float> dis; // 随机数分布器
@@ -35,6 +35,9 @@ private:
 
        ProjectileEnemy projectileEnemyTemplate;       // 敌机子弹模板
        std::list<ProjectileEnemy *> projectilesEnemy; // 敌机子弹容器
+
+       Explosion explosionTemplate;       // 爆炸动画模板
+       std::list<Explosion *> explosions; // 存储活动爆炸动画的列表
 
        // 处理键盘控制
        void keyboardControl(float deltaTime);
@@ -62,6 +65,12 @@ private:
        void updatePlayer(float deltaTime);
        // 敌机爆炸效果
        void enemyExplode(Enemy *enemy);
+       // 更新爆炸动画
+       void updateExplosions(float deltaTime);
+       // 渲染爆炸动画
+       void renderExplosions();
+       //玩家爆炸
+       void playerExplode();
 
 public:
        SceneMain();

@@ -67,6 +67,8 @@ void Game::init()
         }
         currentScene = new SceneMain();
         currentScene->init();
+
+        
 }
 
 void Game::clean()
