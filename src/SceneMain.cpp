@@ -1,7 +1,7 @@
 #include "SceneMain.hpp"
 #include <SDL_image.h>
 #include <string>
-SceneMain::SceneMain() : game(Game::getInstance())
+SceneMain::SceneMain() : Scene(Game::getInstance())
 {
 }
 

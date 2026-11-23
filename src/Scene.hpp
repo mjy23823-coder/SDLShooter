@@ -9,10 +9,16 @@
  #pragma once
 
  #include<SDL.h>
- 
+
+ // 前向声明，避免和 Game.hpp 循环包含
+ class Game;
+
  class Scene{
+ protected:
+        Game& game;
+
  public:
-        Scene() = default;
+        explicit Scene(Game& game) : game(game) {}
         virtual ~Scene() = default;
 
         // 初始化场景

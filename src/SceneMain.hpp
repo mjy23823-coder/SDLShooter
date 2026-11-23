@@ -18,7 +18,6 @@
 class SceneMain : public Scene
 {
 private:
-       Game &game;
        Player player;
        bool isDead = false; // 玩家是否死亡
        SDL_Texture *uiHealth = nullptr;

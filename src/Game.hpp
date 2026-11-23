@@ -11,6 +11,8 @@
 #include "Scene.hpp"
 #include <SDL_mixer.h>
 #include "Object.hpp"
+#include <SDL_ttf.h>
+#include <string>
 class Game
 {
 private:
@@ -39,6 +41,9 @@ private:
        Background nearStars; // 近处的星星
        Background farStars;  // 远处的星星
 
+       TTF_Font *titleFont = nullptr;
+       TTF_Font *textFont = nullptr;
+
 public:
        static Game &getInstance()
        {
@@ -63,6 +68,9 @@ public:
        void backgroundUpdate(float deltaTime);
        // 背景渲染
        void renderBackground();
+
+       // 渲染文字函数
+       void renderTextCentered(std::string text, float posY, bool isTitle);
 
        SDL_Window *getWindow() { return window; }
        SDL_Renderer *getRenderer() { return renderer; }

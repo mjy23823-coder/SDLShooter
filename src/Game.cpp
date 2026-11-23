@@ -2,6 +2,7 @@
 #include "SceneMain.hpp"
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include "SceneTitle.hpp"
 
 Game::Game()
 {
@@ -105,8 +106,20 @@ void Game::init()
         Mix_VolumeMusic(MIX_MAX_VOLUME / 4);
         Mix_Volume(-1, MIX_MAX_VOLUME / 8);
 
+        // 载入字体（必须在 TTF_Init 之后）
+        titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 48);
+        if (titleFont == nullptr)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load title font: %s", TTF_GetError());
+        }
+        textFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 24);
+        if (textFont == nullptr)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load text font: %s", TTF_GetError());
+        }
+
         // 音频初始化完成后再创建场景（场景 init 里要加载音频资源）
-        currentScene = new SceneMain();
+        currentScene = new SceneTitle();
         currentScene->init();
 }
 
@@ -130,7 +143,15 @@ void Game::clean()
         // 清理SDL_mixer
         Mix_CloseAudio();
         Mix_Quit();
-        // 清理SDL_ttf
+        // 清理字体和SDL_ttf
+        if (titleFont != nullptr)
+        {
+                TTF_CloseFont(titleFont);
+        }
+        if (textFont != nullptr)
+        {
+                TTF_CloseFont(textFont);
+        }
         TTF_Quit();
         // 销毁窗口
         SDL_DestroyWindow(window);
@@ -218,4 +239,35 @@ void Game::renderBackground()
                         SDL_RenderCopy(renderer, nearStars.texture, nullptr, &dstRect);
                 }
         }
+}
+
+
+
+void Game::renderTextCentered(std::string text, float posY, bool isTitle)
+{
+    SDL_Color color = {255, 255, 255, 255};
+    TTF_Font *font = isTitle ? titleFont : textFont;
+    if (font == nullptr)
+    {
+        return;
+    }
+    SDL_Surface *surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+    if (surface == nullptr)
+    {
+        return;
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture == nullptr)
+    {
+        SDL_FreeSurface(surface);
+        return;
+    }
+    int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
+    SDL_Rect rect = {getWindowWidth() / 2 - surface->w / 2,
+                     y,
+                     surface->w,
+                     surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
