@@ -38,7 +38,10 @@ private:
 
        Explosion explosionTemplate;       // 爆炸动画模板
        std::list<Explosion *> explosions; // 存储活动爆炸动画的列表
-
+       
+       Item itemLifeTemplate;   //物品模板
+       std::list<Item *> items; //物品容器
+       
        // 处理键盘控制
        void keyboardControl(float deltaTime);
        // 射击子弹
@@ -69,8 +72,16 @@ private:
        void updateExplosions(float deltaTime);
        // 渲染爆炸动画
        void renderExplosions();
-       //玩家爆炸
+       // 玩家爆炸
        void playerExplode();
+       //物品生成
+       void dropItem(Enemy *enemy);
+       // 更新物品
+       void updateItems(float deltaTime);
+       // 玩家获取物品
+       void playerGetItem(Item *item);
+       // 渲染物品
+       void renderItems();
 
 public:
        SceneMain();
