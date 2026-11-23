@@ -18,7 +18,7 @@
         // 初始化场景
         virtual void init() = 0;
         // 更新场景渲染
-        virtual void update() = 0;
+        virtual void update(float deltaTime) = 0;
         // 渲染场景
         virtual void render() = 0;
         // 清理场景资源

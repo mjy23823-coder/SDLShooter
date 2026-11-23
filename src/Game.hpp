@@ -29,6 +29,12 @@ private:
        int windowWidth = 600;
        // 游戏窗口长度
        int windowHeight = 800;
+       // 目标帧率
+       int FPS = 60;          
+       // 每帧的目标时间（毫秒）  
+       Uint32 frameTime;       
+       // 两帧之间的时间差（秒） 
+       float deltaTime;        
 
 public:
        static Game &getInstance()
@@ -48,11 +54,13 @@ public:
        //  事件处理
        void handleEvent(SDL_Event *event);
        //
-       void update();
+       void update(float deltaTime);
        void render();
 
        SDL_Window *getWindow() { return window; }
        SDL_Renderer *getRenderer() { return renderer; }
        int getWindowWidth() { return windowWidth; }
        int getWindowHeight() { return windowHeight; }
+
+
 };
