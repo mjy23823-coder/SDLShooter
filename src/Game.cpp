@@ -65,10 +65,30 @@ void Game::init()
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
                 isRunning = false;
         }
+        // 初始化SDL_mixer
+        if (Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG) != (MIX_INIT_MP3 | MIX_INIT_OGG))
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+                isRunning = false;
+        }
+
+        // 打开音频设备
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer could not open audio! SDL_mixer Error: %s\n", Mix_GetError());
+                isRunning = false;
+        }
+
+        // 设置音效channel数量
+        Mix_AllocateChannels(32);
+
+        // 设置音乐音量
+        Mix_VolumeMusic(MIX_MAX_VOLUME / 4);
+        Mix_Volume(-1, MIX_MAX_VOLUME / 8);
+
+        // 音频初始化完成后再创建场景（场景 init 里要加载音频资源）
         currentScene = new SceneMain();
         currentScene->init();
-
-        
 }
 
 void Game::clean()
@@ -80,6 +100,9 @@ void Game::clean()
         }
         // 销毁渲染器
         SDL_DestroyRenderer(renderer);
+        // 清理SDL_mixer
+        Mix_CloseAudio();
+        Mix_Quit();
         // 销毁窗口
         SDL_DestroyWindow(window);
         SDL_Quit();

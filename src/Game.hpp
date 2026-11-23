@@ -9,6 +9,7 @@
 
 #pragma once
 #include "Scene.hpp"
+#include <SDL_mixer.h>
 
 class Game
 {

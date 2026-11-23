@@ -50,6 +50,22 @@ void SceneMain::handleEvent(SDL_Event *event)
 
 void SceneMain::init()
 {
+        // 读取并播放背景音乐
+        bgm = Mix_LoadMUS("assets/music/03_Racing_Through_Asteroids_Loop.ogg");
+        if (bgm == nullptr)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load music: %s", Mix_GetError());
+        }
+        Mix_PlayMusic(bgm, -1);
+
+        // 读取音效资源
+        sounds["player_shoot"] = Mix_LoadWAV("assets/sound/laser_shoot4.wav");
+        sounds["enemy_shoot"] = Mix_LoadWAV("assets/sound/xs_laser.wav");
+        sounds["player_explode"] = Mix_LoadWAV("assets/sound/explosion1.wav");
+        sounds["enemy_explode"] = Mix_LoadWAV("assets/sound/explosion3.wav");
+        sounds["hit"] = Mix_LoadWAV("assets/sound/eff11.wav");
+        sounds["get_item"] = Mix_LoadWAV("assets/sound/eff5.wav");
+
         // 初始化随机数生成器
         std::random_device rd;                                   // 获取真随机数作为种子
         gen = std::mt19937(rd());                                // 用种子初始化梅森旋转引擎
@@ -153,6 +169,16 @@ void SceneMain::clean()
         }
         items.clear();
 
+        // 清理音效库
+        for (auto sound : sounds)
+        {
+                if (sound.second != nullptr)
+                {
+                        Mix_FreeChunk(sound.second);
+                }
+        }
+        sounds.clear();
+
         // 清理纹理
         if (player.texture != nullptr)
         {
@@ -178,6 +204,12 @@ void SceneMain::clean()
         if (itemLifeTemplate.texture != nullptr)
         {
                 SDL_DestroyTexture(itemLifeTemplate.texture);
+        }
+        // 清理音乐资源
+        if (bgm != nullptr)
+        {
+                Mix_HaltMusic();
+                Mix_FreeMusic(bgm);
         }
 }
 
@@ -242,6 +274,8 @@ void SceneMain::shootPlayer()
         projectile->position.y = player.position.y;
         // 添加到活动子弹列表
         projectilesPlayer.push_back(projectile);
+        // 射击音效
+        Mix_PlayChannel(0, sounds["player_shoot"], 0);
 }
 
 void SceneMain::updatePlayerProjectiles(float deltaTime)
@@ -278,6 +312,7 @@ void SceneMain::updatePlayerProjectiles(float deltaTime)
                                         delete projectile;
                                         it = projectilesPlayer.erase(it);
                                         hit = true;
+                                        Mix_PlayChannel(-1, sounds["hit"], 0);
                                         break;
                                 }
                         }
@@ -363,6 +398,7 @@ void SceneMain::enemyExplode(Enemy *enemy)
         explosion->position.y = enemy->position.y + enemy->height / 2 - explosion->height / 2;
         explosion->startTime = currentTime;
         explosions.push_back(explosion);
+        Mix_PlayChannel(-1, sounds["enemy_explode"], 0);
         // 添加50%概率掉落物品
         if (dis(gen) < 0.5f)
         {
@@ -398,6 +434,8 @@ void SceneMain::shootEnemy(Enemy *enemy)
 
         // 添加到敌机子弹列表
         projectilesEnemy.push_back(projectile);
+        // 射击音效
+        Mix_PlayChannel(-1, sounds["enemy_shoot"], 0);
 }
 
 void SceneMain::updateEnemyProjectiles(float deltaTime)
@@ -433,6 +471,7 @@ void SceneMain::updateEnemyProjectiles(float deltaTime)
                                 player.currentHealth -= projectile->damage;
                                 delete projectile;
                                 it = projectilesEnemy.erase(it);
+                                Mix_PlayChannel(-1, sounds["hit"], 0);
                         }
                         else
                         {
@@ -487,6 +526,8 @@ void SceneMain::updatePlayer(float deltaTime)
                 playerExplode();
                 // 玩家死亡处理
                 isDead = true;
+                Mix_PlayChannel(-1, sounds["player_explode"], 0);
+                return;
         }
         for (auto enemy : enemies)
         {
@@ -554,6 +595,7 @@ void SceneMain::playerExplode()
         explosion->position.y = player.position.y + player.height / 2 - explosion->height / 2;
         explosion->startTime = currentTime;
         explosions.push_back(explosion);
+        Mix_PlayChannel(-1, sounds["player_explode"], 0);
 }
 
 void SceneMain::dropItem(Enemy *enemy)
@@ -648,6 +690,7 @@ void SceneMain::playerGetItem(Item *item)
                         player.currentHealth = player.maxHealth;
                 }
         }
+        Mix_PlayChannel(-1, sounds["get_item"], 0);
 }
 
 void SceneMain::renderItems()

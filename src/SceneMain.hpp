@@ -13,7 +13,7 @@
 #include "Game.hpp"
 #include <list>
 #include <random>
-
+#include <map>
 class SceneMain : public Scene
 {
 private:
@@ -38,10 +38,13 @@ private:
 
        Explosion explosionTemplate;       // 爆炸动画模板
        std::list<Explosion *> explosions; // 存储活动爆炸动画的列表
-       
-       Item itemLifeTemplate;   //物品模板
-       std::list<Item *> items; //物品容器
-       
+
+       Item itemLifeTemplate;   // 物品模板
+       std::list<Item *> items; // 物品容器
+
+       Mix_Music *bgm;
+       std::map<std::string, Mix_Chunk *> sounds; // 存储音效
+
        // 处理键盘控制
        void keyboardControl(float deltaTime);
        // 射击子弹
@@ -74,7 +77,7 @@ private:
        void renderExplosions();
        // 玩家爆炸
        void playerExplode();
-       //物品生成
+       // 物品生成
        void dropItem(Enemy *enemy);
        // 更新物品
        void updateItems(float deltaTime);
