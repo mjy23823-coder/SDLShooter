@@ -42,6 +42,8 @@ void SceneMain::render()
         renderExplosions();
         // 渲染物品
         renderItems();
+        // 渲染UI
+        renderUI();
 }
 
 void SceneMain::handleEvent(SDL_Event *event)
@@ -65,6 +67,9 @@ void SceneMain::init()
         sounds["enemy_explode"] = Mix_LoadWAV("assets/sound/explosion3.wav");
         sounds["hit"] = Mix_LoadWAV("assets/sound/eff11.wav");
         sounds["get_item"] = Mix_LoadWAV("assets/sound/eff5.wav");
+
+        // 读取ui Health
+        uiHealth = IMG_LoadTexture(game.getRenderer(), "assets/image/Health UI Black.png");
 
         // 初始化随机数生成器
         std::random_device rd;                                   // 获取真随机数作为种子
@@ -179,6 +184,11 @@ void SceneMain::clean()
         }
         sounds.clear();
 
+        // 清理ui
+        if (uiHealth != nullptr)
+        {
+                SDL_DestroyTexture(uiHealth);
+        }
         // 清理纹理
         if (player.texture != nullptr)
         {
@@ -703,5 +713,26 @@ void SceneMain::renderItems()
                     item->width,
                     item->height};
                 SDL_RenderCopy(game.getRenderer(), item->texture, NULL, &itemRect);
+        }
+}
+
+// SceneMain.cpp
+void SceneMain::renderUI()
+{
+        int x = 10;
+        int y = 10;
+        int size = 32;
+        int offset = 40;
+        SDL_SetTextureColorMod(uiHealth, 100, 100, 100); // 颜色减淡
+        for (int i = 0; i < player.maxHealth; i++)
+        {
+                SDL_Rect rect = {x + i * offset, y, size, size};
+                SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
+        }
+        SDL_SetTextureColorMod(uiHealth, 255, 255, 255); // reset color
+        for (int i = 0; i < player.currentHealth; i++)
+        {
+                SDL_Rect rect = {x + i * offset, y, size, size};
+                SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
         }
 }

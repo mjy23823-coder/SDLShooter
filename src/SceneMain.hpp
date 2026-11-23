@@ -20,6 +20,8 @@ private:
        Game &game;
        Player player;
        bool isDead = false; // 玩家是否死亡
+       SDL_Texture* uiHealth;
+       
        // 随机数相关成员
        std::mt19937 gen;                          // 随机数生成器
        std::uniform_real_distribution<float> dis; // 随机数分布器
@@ -85,6 +87,8 @@ private:
        void playerGetItem(Item *item);
        // 渲染物品
        void renderItems();
+       // 渲染UI
+       void renderUI();
 
 public:
        SceneMain();
