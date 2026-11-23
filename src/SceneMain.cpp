@@ -1,6 +1,6 @@
 #include "SceneMain.hpp"
 #include <SDL_image.h>
-
+#include <string>
 SceneMain::SceneMain() : game(Game::getInstance())
 {
 }
@@ -70,6 +70,13 @@ void SceneMain::init()
 
         // 读取ui Health
         uiHealth = IMG_LoadTexture(game.getRenderer(), "assets/image/Health UI Black.png");
+
+        // 载入字体
+        scoreFont = TTF_OpenFont("assets/font/VonwaonBitmap-12px.ttf", 24);
+        if (scoreFont == nullptr)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load font: %s", TTF_GetError());
+        }
 
         // 初始化随机数生成器
         std::random_device rd;                                   // 获取真随机数作为种子
@@ -189,11 +196,19 @@ void SceneMain::clean()
         {
                 SDL_DestroyTexture(uiHealth);
         }
+
+        // 清理字体
+        if (scoreFont != nullptr)
+        {
+                TTF_CloseFont(scoreFont);
+        }
+
         // 清理纹理
         if (player.texture != nullptr)
         {
                 SDL_DestroyTexture(player.texture);
         }
+        
         if (projectilePlayerTemplate.texture != nullptr)
         {
                 SDL_DestroyTexture(projectilePlayerTemplate.texture);
@@ -414,6 +429,7 @@ void SceneMain::enemyExplode(Enemy *enemy)
         {
                 dropItem(enemy);
         }
+        score += 10; // 击败敌机获得10分
         delete enemy;
 }
 
@@ -692,6 +708,7 @@ void SceneMain::updateItems(float deltaTime)
 
 void SceneMain::playerGetItem(Item *item)
 {
+        score += 5; // 拾取物品获得5分
         if (item->type == ItemType::Life)
         {
                 player.currentHealth += 1;
@@ -723,16 +740,40 @@ void SceneMain::renderUI()
         int y = 10;
         int size = 32;
         int offset = 40;
-        SDL_SetTextureColorMod(uiHealth, 100, 100, 100); // 颜色减淡
-        for (int i = 0; i < player.maxHealth; i++)
+        if (uiHealth != nullptr)
         {
-                SDL_Rect rect = {x + i * offset, y, size, size};
-                SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
+                SDL_SetTextureColorMod(uiHealth, 100, 100, 100); // 颜色减淡
+                for (int i = 0; i < player.maxHealth; i++)
+                {
+                        SDL_Rect rect = {x + i * offset, y, size, size};
+                        SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
+                }
+                SDL_SetTextureColorMod(uiHealth, 255, 255, 255); // reset color
+                for (int i = 0; i < player.currentHealth; i++)
+                {
+                        SDL_Rect rect = {x + i * offset, y, size, size};
+                        SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
+                }
         }
-        SDL_SetTextureColorMod(uiHealth, 255, 255, 255); // reset color
-        for (int i = 0; i < player.currentHealth; i++)
+
+        // 渲染得分
+        if (scoreFont == nullptr)
         {
-                SDL_Rect rect = {x + i * offset, y, size, size};
-                SDL_RenderCopy(game.getRenderer(), uiHealth, NULL, &rect);
+                return;
         }
+        auto text = "SCORE:" + std::to_string(score);
+        SDL_Color color = {255, 255, 255, 255}; // 白色
+        SDL_Surface *surface = TTF_RenderUTF8_Solid(scoreFont, text.c_str(), color);
+        if (surface == nullptr)
+        {
+                return;
+        }
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(game.getRenderer(), surface);
+        if (texture != nullptr)
+        {
+                SDL_Rect rect = {game.getWindowWidth() - 10 - surface->w, 10, surface->w, surface->h};
+                SDL_RenderCopy(game.getRenderer(), texture, NULL, &rect);
+        }
+        SDL_DestroyTexture(texture);
+        SDL_FreeSurface(surface);
 }

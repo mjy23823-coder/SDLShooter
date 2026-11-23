@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "SceneMain.hpp"
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 Game::Game()
 {
@@ -65,6 +66,12 @@ void Game::init()
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
                 isRunning = false;
         }
+        // 初始化SDL_ttf（必须在 TTF_OpenFont 之前）
+        if (TTF_Init() < 0)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf could not initialize! TTF Error: %s\n", TTF_GetError());
+                isRunning = false;
+        }
         // 初始化SDL_mixer
         if (Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG) != (MIX_INIT_MP3 | MIX_INIT_OGG))
         {
@@ -123,6 +130,8 @@ void Game::clean()
         // 清理SDL_mixer
         Mix_CloseAudio();
         Mix_Quit();
+        // 清理SDL_ttf
+        TTF_Quit();
         // 销毁窗口
         SDL_DestroyWindow(window);
         SDL_Quit();

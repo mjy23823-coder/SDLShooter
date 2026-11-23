@@ -14,14 +14,17 @@
 #include <list>
 #include <random>
 #include <map>
+#include <SDL_ttf.h>
 class SceneMain : public Scene
 {
 private:
        Game &game;
        Player player;
        bool isDead = false; // 玩家是否死亡
-       SDL_Texture* uiHealth;
-       
+       SDL_Texture *uiHealth = nullptr;
+       TTF_Font *scoreFont = nullptr;
+       int score = 0;
+
        // 随机数相关成员
        std::mt19937 gen;                          // 随机数生成器
        std::uniform_real_distribution<float> dis; // 随机数分布器
