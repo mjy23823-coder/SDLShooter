@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # 设置编译选项
 if(MSVC)
-        add_compile_options(/W4)
+        add_compile_options(/W4 /utf-8)
 else()
         add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -31,7 +31,8 @@ add_executable(${TARGET} "src/main.cpp"
                          "src/SceneMain.cpp"
                          "src/Game.hpp"
                          "src/Scene.hpp"
-                         "src/SceneMain.hpp")
+                         "src/SceneMain.hpp"
+                         "src/Object.hpp")
 
 # 链接库
 target_link_libraries(${TARGET} SDL2::SDL2 SDL2::SDL2main  
