@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "SceneMain.hpp"
+#include <SDL_image.h>
 
 Game::Game()
 {
@@ -43,7 +44,12 @@ void Game::init()
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
                 isRunning = false;
         }
-
+        // 初始化SDL_image
+        if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+        {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+                isRunning = false;
+        }
         currentScene = new SceneMain();
         currentScene->init();
 }
@@ -88,15 +94,16 @@ void Game::handleEvent(SDL_Event *event)
         }
 }
 
-
-void Game::update(){
+void Game::update()
+{
         currentScene->update();
 }
 
-void Game::render(){
-        //清空
+void Game::render()
+{
+        // 清空
         SDL_RenderClear(renderer);
         currentScene->render();
-        //显示更新
+        // 显示更新
         SDL_RenderPresent(renderer);
 }
