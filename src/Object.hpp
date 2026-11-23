@@ -39,11 +39,24 @@ struct ProjectilePlayer
       int speed = 400;
 };
 
-
+// 敌机
 struct Enemy
 {
       SDL_Texture *texture = nullptr;
       SDL_FPoint position = {0, 0};
+      int width = 0;
+      int height = 0;
+      int speed = 400;
+      Uint32 coolDown = 1000;   // 发射冷却时间（1秒）
+      Uint32 lastShootTime = 0; // 上次发射时间
+};
+
+// 敌机子弹
+struct ProjectileEnemy
+{
+      SDL_Texture *texture = nullptr;
+      SDL_FPoint position = {0, 0};
+      SDL_FPoint direction = {0, 0}; // 子弹方向向量
       int width = 0;
       int height = 0;
       int speed = 400;

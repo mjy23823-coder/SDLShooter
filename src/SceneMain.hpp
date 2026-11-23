@@ -12,7 +12,7 @@
 #include "Object.hpp"
 #include "Game.hpp"
 #include <list>
-#include<random>
+#include <random>
 
 class SceneMain : public Scene
 {
@@ -33,6 +33,9 @@ private:
        // 存储活动子弹的列表
        std::list<ProjectilePlayer *> projectilesPlayer;
 
+       ProjectileEnemy projectileEnemyTemplate;       // 敌机子弹模板
+       std::list<ProjectileEnemy *> projectilesEnemy; // 敌机子弹容器
+
        // 处理键盘控制
        void keyboardControl(float deltaTime);
        // 射击子弹
@@ -47,7 +50,15 @@ private:
        void updateEnemies(float deltaTime);
        // 渲染敌人
        void renderEnemies();
-
+       // 敌机发射子弹
+       void shootEnemy(Enemy *enemy);
+       // 更新敌机子弹
+       void updateEnemyProjectiles(float deltaTime);
+       // 渲染敌机子弹
+       void renderEnemyProjectiles();
+       // 计算子弹方向
+       SDL_FPoint getDirection(Enemy *enemy); 
+       
 public:
        SceneMain();
        ~SceneMain();
