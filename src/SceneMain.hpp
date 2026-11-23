@@ -12,12 +12,21 @@
 #include "Object.hpp"
 #include "Game.hpp"
 #include <list>
+#include<random>
 
 class SceneMain : public Scene
 {
 private:
        Game &game;
        Player player;
+
+       // 随机数相关成员
+       std::mt19937 gen;                          // 随机数生成器
+       std::uniform_real_distribution<float> dis; // 随机数分布器
+
+       // 敌机相关成员
+       Enemy enemyTemplate;        // 敌机模板
+       std::list<Enemy *> enemies; // 存储活动敌机的列表
 
        // 创建子弹模板
        ProjectilePlayer projectilePlayerTemplate;
@@ -32,6 +41,12 @@ private:
        void updatePlayerProjectiles(float deltaTime); // 更新子弹
        // 渲染子弹
        void renderPlayerProjectiles();
+       // 生成敌机
+       void spawEnemy();
+       // 更新敌人
+       void updateEnemies(float deltaTime);
+       // 渲染敌人
+       void renderEnemies();
 
 public:
        SceneMain();

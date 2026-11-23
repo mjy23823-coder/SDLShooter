@@ -11,14 +11,18 @@ SceneMain::~SceneMain()
 
 void SceneMain::update(float deltaTime)
 {
-        keyboardControl(deltaTime);
-        updatePlayerProjectiles(deltaTime);
+        keyboardControl(deltaTime);     
+        updatePlayerProjectiles(deltaTime);     //更新子弹
+        spawEnemy();              // 生成敌机
+        updateEnemies(deltaTime); // 更新敌机
 }
 
 void SceneMain::render()
 {
         // 渲染子弹
         renderPlayerProjectiles();
+        // 渲染敌机
+        renderEnemies();
         // 玩家的渲染矩形
         SDL_Rect playerRect = {static_cast<int>(player.position.x),
                                static_cast<int>(player.position.y),
@@ -33,6 +37,11 @@ void SceneMain::handleEvent(SDL_Event *event)
 
 void SceneMain::init()
 {
+        // 初始化随机数生成器
+        std::random_device rd;                                   // 获取真随机数作为种子
+        gen = std::mt19937(rd());                                // 用种子初始化梅森旋转引擎
+        dis = std::uniform_real_distribution<float>(0.0f, 1.0f); // 设置[0,1]均匀分布
+
         // 加载玩家纹理
         player.texture = IMG_LoadTexture(game.getRenderer(), "assets/image/SpaceShip.png");
         if (player.texture == nullptr)
@@ -51,6 +60,12 @@ void SceneMain::init()
         SDL_QueryTexture(projectilePlayerTemplate.texture, NULL, NULL, &projectilePlayerTemplate.width, &projectilePlayerTemplate.height);
         projectilePlayerTemplate.width /= 4;
         projectilePlayerTemplate.height /= 4;
+
+        // 初始化敌机模板
+        enemyTemplate.texture = IMG_LoadTexture(game.getRenderer(), "assets/image/insect-2.png");
+        SDL_QueryTexture(enemyTemplate.texture, NULL, NULL, &enemyTemplate.width, &enemyTemplate.height);
+        enemyTemplate.width /= 4;
+        enemyTemplate.height /= 4;
 }
 
 void SceneMain::clean()
@@ -66,6 +81,16 @@ void SceneMain::clean()
         }
         projectilesPlayer.clear();
 
+        // 清理敌机
+        for (auto &enemy : enemies)
+        {
+                if (enemy != nullptr)
+                {
+                        delete enemy;
+                }
+        }
+        enemies.clear();
+
         // 清理纹理
         if (player.texture != nullptr)
         {
@@ -74,6 +99,10 @@ void SceneMain::clean()
         if (projectilePlayerTemplate.texture != nullptr)
         {
                 SDL_DestroyTexture(projectilePlayerTemplate.texture);
+        }
+        if (enemyTemplate.texture != nullptr)
+        {
+                SDL_DestroyTexture(enemyTemplate.texture);
         }
 }
 
@@ -171,5 +200,61 @@ void SceneMain::renderPlayerProjectiles()
                     projectile->width,
                     projectile->height};
                 SDL_RenderCopy(game.getRenderer(), projectile->texture, NULL, &projectileRect);
+        }
+}
+
+void SceneMain::spawEnemy()
+{
+        // 利用随机数决定是否生成敌机（每帧约1/60的概率）
+        if (dis(gen) > 1 / 60.0f)
+        {
+                return;
+        }
+
+        // 创建新敌机
+        Enemy *enemy = new Enemy(enemyTemplate);
+
+        // 利用随机数决定敌机的水平位置
+        enemy->position.x = dis(gen) * (game.getWindowWidth() - enemy->width);
+
+        // 垂直位置设在屏幕上方（刚好不可见）
+        enemy->position.y = -enemy->height;
+
+        // 添加到活动敌机列表
+        enemies.push_back(enemy);
+}
+
+void SceneMain::updateEnemies(float deltaTime)
+{
+        for (auto it = enemies.begin(); it != enemies.end();)
+        {
+                auto enemy = *it;
+
+                // 更新敌机位置
+                enemy->position.y += enemy->speed * deltaTime;
+
+                // 检查敌机是否飞出屏幕底部
+                if (enemy->position.y > game.getWindowHeight())
+                {
+                        delete enemy;
+                        it = enemies.erase(it);
+                }
+                else
+                {
+                        ++it;
+                }
+        }
+}
+
+void SceneMain::renderEnemies()
+{
+        for (auto enemy : enemies)
+        {
+                SDL_Rect enemyRect = {
+                    static_cast<int>(enemy->position.x),
+                    static_cast<int>(enemy->position.y),
+                    enemy->width,
+                    enemy->height};
+                SDL_RenderCopy(game.getRenderer(), enemy->texture, NULL, &enemyRect);
         }
 }

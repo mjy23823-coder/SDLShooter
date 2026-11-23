@@ -15,26 +15,29 @@ void Game::run()
         // 游戏主循环
         while (isRunning)
         {
-                auto frameStart = SDL_GetTicks();  // 记录帧开始时间
+                auto frameStart = SDL_GetTicks(); // 记录帧开始时间
                 SDL_Event event;
                 handleEvent(&event);
-                update(deltaTime);  // 传递deltaTime
+                update(deltaTime); // 传递deltaTime
                 render();
-                auto frameEnd = SDL_GetTicks();  // 记录帧结束时间
-                auto diff = frameEnd - frameStart;  // 计算帧处理时间
+                auto frameEnd = SDL_GetTicks();    // 记录帧结束时间
+                auto diff = frameEnd - frameStart; // 计算帧处理时间
                 // 帧率限制和deltaTime计算
-                if (diff < frameTime){
-                        SDL_Delay(frameTime - diff);  // 如果处理太快，延迟一下
-                        deltaTime = frameTime / 1000.0f;  // 转换为秒
-                } else{
-                        deltaTime = diff / 1000.0f;  // 如果处理较慢，使用实际时间
+                if (diff < frameTime)
+                {
+                        SDL_Delay(frameTime - diff);     // 如果处理太快，延迟一下
+                        deltaTime = frameTime / 1000.0f; // 转换为秒
                 }
-
+                else
+                {
+                        deltaTime = diff / 1000.0f; // 如果处理较慢，使用实际时间
+                }
         }
 }
 
 void Game::init()
 {
+
         frameTime = 1000 / FPS;
         // 初始化
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
