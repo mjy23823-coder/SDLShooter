@@ -1,4 +1,5 @@
 #include "SceneMain.hpp"
+#include "SceneEnd.hpp"
 #include <SDL_image.h>
 #include <string>
 SceneMain::SceneMain() : Scene(Game::getInstance())
@@ -19,6 +20,19 @@ void SceneMain::update(float deltaTime)
         updatePlayer(deltaTime);            // 更新玩家状态
         updateExplosions(deltaTime);        // 更新爆炸动画
         updateItems(deltaTime);             // 更新物品
+        if (isDead)
+        {
+                changeSceneDelayed(deltaTime, 3.0f); // 死亡 3 秒后切换到结束场景
+        }
+}
+
+void SceneMain::changeSceneDelayed(float deltaTime, float delay)
+{
+        timerEnd += deltaTime;
+        if (timerEnd > delay)
+        {
+                game.changeScene(new SceneEnd());
+        }
 }
 
 void SceneMain::render()
@@ -549,10 +563,10 @@ void SceneMain::updatePlayer(float deltaTime)
         }
         if (player.currentHealth <= 0)
         {
-                playerExplode();
+                playerExplode(); // 内部会播放爆炸音效
                 // 玩家死亡处理
                 isDead = true;
-                Mix_PlayChannel(-1, sounds["player_explode"], 0);
+                game.setFinalScore(score); // 记录最终得分，供结束场景显示
                 return;
         }
         for (auto enemy : enemies)

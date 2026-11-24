@@ -12,3 +12,6 @@ build/
 *.exe
 *.pdb
 
+# 玩家存档（得分榜）
+assets/save.dat
+

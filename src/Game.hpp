@@ -13,6 +13,9 @@
 #include "Object.hpp"
 #include <SDL_ttf.h>
 #include <string>
+#include <map>
+#include <functional>
+
 class Game
 {
 private:
@@ -26,6 +29,8 @@ private:
        Scene *currentScene = nullptr;
        // 游戏窗口
        SDL_Window *window = nullptr;
+       // 是否处于全屏模式
+       bool isFullscreen = false;
        // 游戏渲染器
        SDL_Renderer *renderer = nullptr;
        // 游戏窗口宽度
@@ -43,6 +48,15 @@ private:
 
        TTF_Font *titleFont = nullptr;
        TTF_Font *textFont = nullptr;
+
+       // 玩家最终得分
+       int finalScore = 0;
+       // 得分榜（分数从高到低）
+       std::multimap<int, std::string, std::greater<int>> leaderBoard;
+
+       // 保存/读取得分榜
+       void saveData();
+       void loadData();
 
 public:
        static Game &getInstance()
@@ -69,8 +83,18 @@ public:
        // 背景渲染
        void renderBackground();
 
-       // 渲染文字函数
-       void renderTextCentered(std::string text, float posY, bool isTitle);
+       // 渲染居中文字，返回文字末尾位置（用于绘制光标）
+       SDL_Point renderTextCentered(std::string text, float posY, bool isTitle);
+       // 在指定位置渲染文字，isLeft 为 true 表示左对齐，false 表示右对齐
+       void renderTextPos(std::string text, int posX, int posY, bool isLeft = true);
+
+       // 插入得分榜（只保留前 8 名）
+       void insertLeaderBoard(int score, std::string name);
+       // 获取得分榜
+       std::multimap<int, std::string, std::greater<int>> &getLeaderBoard() { return leaderBoard; }
+
+       void setFinalScore(int score) { finalScore = score; }
+       int getFinalScore() { return finalScore; }
 
        SDL_Window *getWindow() { return window; }
        SDL_Renderer *getRenderer() { return renderer; }

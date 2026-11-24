@@ -49,6 +49,11 @@ private:
        Mix_Music *bgm;
        std::map<std::string, Mix_Chunk *> sounds; // 存储音效
 
+       // 死亡后延时切换场景的计时器
+       float timerEnd = 0.0f;
+       // 延时切换到结束场景
+       void changeSceneDelayed(float deltaTime, float delay);
+
        // 处理键盘控制
        void keyboardControl(float deltaTime);
        // 射击子弹

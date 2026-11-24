@@ -3,6 +3,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include "SceneTitle.hpp"
+#include <fstream>
 
 Game::Game()
 {
@@ -10,6 +11,8 @@ Game::Game()
 
 Game::~Game()
 {
+        saveData();
+        clean();
 }
 
 void Game::run()
@@ -41,6 +44,8 @@ void Game::init()
 {
 
         frameTime = 1000 / FPS;
+        // 读取得分榜
+        loadData();
         // 初始化
         if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
         {
@@ -60,6 +65,11 @@ void Game::init()
         {
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
                 isRunning = false;
+        }
+        // 设置逻辑分辨率：全屏时保持 600x800 的比例，需要时自动加黑边，而不是拉伸画面
+        if (renderer != nullptr)
+        {
+                SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
         }
         // 初始化SDL_image
         if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
@@ -180,6 +190,19 @@ void Game::handleEvent(SDL_Event *event)
                 {
                         isRunning = false;
                 }
+                // F4 切换全屏 / 窗口模式
+                if (event->type == SDL_KEYDOWN && event->key.keysym.scancode == SDL_SCANCODE_F4)
+                {
+                        isFullscreen = !isFullscreen;
+                        if (isFullscreen)
+                        {
+                                SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        }
+                        else
+                        {
+                                SDL_SetWindowFullscreen(window, 0);
+                        }
+                }
                 currentScene->handleEvent(event);
         }
 }
@@ -243,15 +266,45 @@ void Game::renderBackground()
 
 
 
-void Game::renderTextCentered(std::string text, float posY, bool isTitle)
+SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle)
 {
     SDL_Color color = {255, 255, 255, 255};
     TTF_Font *font = isTitle ? titleFont : textFont;
     if (font == nullptr)
     {
-        return;
+        return {0, 0};
     }
     SDL_Surface *surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+    if (surface == nullptr)
+    {
+        return {0, 0};
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture == nullptr)
+    {
+        SDL_FreeSurface(surface);
+        return {0, 0};
+    }
+    int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
+    SDL_Rect rect = {getWindowWidth() / 2 - surface->w / 2,
+                     y,
+                     surface->w,
+                     surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    // 返回文字末尾位置，方便在文字后面画光标
+    return {rect.x + rect.w, y};
+}
+
+void Game::renderTextPos(std::string text, int posX, int posY, bool isLeft)
+{
+    SDL_Color color = {255, 255, 255, 255};
+    if (textFont == nullptr)
+    {
+        return;
+    }
+    SDL_Surface *surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
     if (surface == nullptr)
     {
         return;
@@ -262,12 +315,58 @@ void Game::renderTextCentered(std::string text, float posY, bool isTitle)
         SDL_FreeSurface(surface);
         return;
     }
-    int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
-    SDL_Rect rect = {getWindowWidth() / 2 - surface->w / 2,
-                     y,
-                     surface->w,
-                     surface->h};
+    SDL_Rect rect;
+    if (isLeft)
+    {
+        rect = {posX, posY, surface->w, surface->h};
+    }
+    else
+    {
+        rect = {getWindowWidth() - posX - surface->w, posY, surface->w, surface->h};
+    }
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+}
+
+void Game::insertLeaderBoard(int score, std::string name)
+{
+    leaderBoard.insert({score, name});
+    // 只保留前 8 名
+    while (leaderBoard.size() > 8)
+    {
+        leaderBoard.erase(--leaderBoard.end());
+    }
+    saveData();
+}
+
+void Game::saveData()
+{
+    std::ofstream file("assets/save.dat");
+    if (!file.is_open())
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open save file for writing");
+        return;
+    }
+    for (const auto &entry : leaderBoard)
+    {
+        file << entry.first << " " << entry.second << std::endl;
+    }
+}
+
+void Game::loadData()
+{
+    std::ifstream file("assets/save.dat");
+    if (!file.is_open())
+    {
+        SDL_Log("No save file found, leaderboard is empty");
+        return;
+    }
+    leaderBoard.clear();
+    int score;
+    std::string name;
+    while (file >> score >> name)
+    {
+        leaderBoard.insert({score, name});
+    }
 }
